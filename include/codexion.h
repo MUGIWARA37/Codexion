@@ -6,18 +6,22 @@
 /*   By: rhlou <rhlou@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/03 17:32:43 by rhlou             #+#    #+#             */
-/*   Updated: 2026/07/03 18:50:47 by rhlou            ###   ########.fr       */
+/*   Updated: 2026/07/05 12:41:36 by rhlou            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CODEXION_H
 #define CODEXION_H
 
+// ================== includes ==================
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include <sys/time.h>
 #include <unistd.h>
+
+// ================== Data Structurs ==================
 
 typedef struct t_coder t_coder;
 
@@ -74,5 +78,12 @@ typedef struct t_coder
     int compile_count;
     t_sim*  sim;
 }              t_coder;
+
+// ================== utils ==================
+
+long long   get_time_ms(void);
+void        ft_msleep(long long ms, t_sim *sim);
+int         is_sim_over(t_sim *sim);
+
 
 #endif
