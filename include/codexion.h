@@ -85,5 +85,14 @@ long long   get_time_ms(void);
 void        ft_msleep(long long ms, t_sim *sim);
 int         is_sim_over(t_sim *sim);
 
+// ================== scheduler ==================
+
+void            ft_swap_heap_entery(t_heap_entry *a, t_heap_entry *b);
+int             heap_init(t_heap *h);
+void            sift_up(t_heap *h, int i);
+void            sift_down(t_heap *h, int i);
+int             heap_push(t_heap *h, long long priority, int coder_id);
+t_heap_entry    heap_pop(t_heap *h);
+int             heap_peek_id(t_heap *h);
 
 #endif
