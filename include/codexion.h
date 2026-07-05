@@ -95,4 +95,8 @@ int             heap_push(t_heap *h, long long priority, int coder_id);
 t_heap_entry    heap_pop(t_heap *h);
 int             heap_peek_id(t_heap *h);
 
+// ================== log ==================
+
+void            log_event(t_sim *sim, int coder_id, char *event);
+
 #endif
