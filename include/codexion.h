@@ -84,6 +84,8 @@ typedef struct t_coder
 long long   get_time_ms(void);
 void        ft_msleep(long long ms, t_sim *sim);
 int         is_sim_over(t_sim *sim);
+int         ft_atoi(const char *str);
+int         ft_strcmp(const char *s1, const char *s2);
 
 // ================== scheduler ==================
 
@@ -98,5 +100,10 @@ int             heap_peek_id(t_heap *h);
 // ================== log ==================
 
 void            log_event(t_sim *sim, int coder_id, char *event);
+
+// ================== init ==================
+
+int             init_dongles(t_sim *sim);
+int             init_sim(t_sim *sim, int argc, char **argv);
 
 #endif

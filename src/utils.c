@@ -6,7 +6,7 @@
 /*   By: rhlou <rhlou@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/05 12:05:03 by rhlou             #+#    #+#             */
-/*   Updated: 2026/07/05 12:36:58 by rhlou            ###   ########.fr       */
+/*   Updated: 2026/07/06 09:50:11 by rhlou            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,4 +47,70 @@ int is_sim_over(t_sim *sim)
     pthread_mutex_unlock(&sim->stop_mutex);
     
     return val;
+}
+
+static int	signcheck(int sign)
+{
+	if (sign == -1)
+		return (0);
+	return (-1);
+}
+
+static int	space_skiper(const char *nptr)
+{
+	int	i;
+
+	i = 0;
+	while (nptr[i] == ' ' || (nptr[i] >= 9 && nptr[i] <= 13))
+		i++;
+	return (i);
+}
+
+int	ft_atoi(const char *nptr)
+{
+	int		i;
+	int		sign;
+	long	res;
+	long	check;
+
+	sign = 1;
+	res = 0;
+	i = space_skiper(nptr);
+	if (nptr[i] == '-' || nptr[i] == '+')
+	{
+		if (nptr[i] == '-')
+			sign = -1;
+		i++;
+	}
+	check = 0;
+	while (nptr[i] >= '0' && nptr[i] <= '9')
+	{
+		res = res * 10 + (nptr[i] - '0');
+		if (res / 10 != check)
+			return (signcheck(sign));
+		check = res;
+		i++;
+	}
+	return (res * sign);
+}
+
+int     ft_strcmp(const char *s1, const char *s2)
+{
+    int i;
+
+    if (!s1 && !s2)
+        return 0;
+    if (!s1)
+        return (-1 * s2[0]);
+    if (!s2)
+        return (s1[0]);
+
+    i = 0;
+    while (s1[i] && s2[i])
+    {
+        if (s1[i] != s2[i])
+            return (s1[i] - s2 [i]);
+        i++;
+    }
+    return (s1[i] - s2[i]);
 }
