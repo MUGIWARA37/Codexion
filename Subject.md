@@ -393,7 +393,8 @@ deterministic EDF policy, even in edge cases.
 
 Example of simulation run:
 
-```
+
+```bash
 0 1 has taken a dongle
 2 1 has taken a dongle
 2 1 is compiling

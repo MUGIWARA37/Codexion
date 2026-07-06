@@ -106,4 +106,9 @@ void            log_event(t_sim *sim, int coder_id, char *event);
 int             init_dongles(t_sim *sim);
 int             init_sim(t_sim *sim, int argc, char **argv);
 
+// ================== dongle ==================
+
+void            dongle_acquire(t_dongle *dongle, long long priority, int coder_id, t_sim *sim);
+void            dongle_release(t_dongle *dongle);
+
 #endif
