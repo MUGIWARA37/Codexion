@@ -6,7 +6,7 @@
 /*   By: rhlou <rhlou@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/05 13:34:27 by rhlou             #+#    #+#             */
-/*   Updated: 2026/07/05 17:24:03 by rhlou            ###   ########.fr       */
+/*   Updated: 2026/07/05 17:39:31 by rhlou            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ int  heap_init(t_heap *h)
     return (0);
 }
 
-void            sift_up(t_heap *h, int i)
+void    sift_up(t_heap *h, int i)
 {
     int parent_index;
 
