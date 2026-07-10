@@ -6,7 +6,7 @@
 /*   By: rhlou <rhlou@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/06 09:29:49 by rhlou             #+#    #+#             */
-/*   Updated: 2026/07/06 10:03:54 by rhlou            ###   ########.fr       */
+/*   Updated: 2026/07/10 14:19:32 by rhlou            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,13 @@ int     init_sim(t_sim *sim, int argc, char **argv)
     sim->time_to_refactor      = ft_atoi(argv[5]);
     sim->num_compiles_required = ft_atoi(argv[6]);
     sim->dongle_cooldown       = ft_atoi(argv[7]);
+
+    if (ft_strcmp(argv[8], "edf") != 0 && ft_strcmp(argv[8], "fifo") != 0)
+    {
+        fprintf(stderr, "Error: scheduler must be 'fifo' or 'edf'\n");
+        return (-1);
+    }
+
     sim->use_edf               = ft_strcmp(argv[8], "edf") == 0;
 
     if (sim->num_coders <= 0 || sim->time_to_burnout < 0
