@@ -111,4 +111,12 @@ int             init_sim(t_sim *sim, int argc, char **argv);
 void            dongle_acquire(t_dongle *dongle, long long priority, int coder_id, t_sim *sim);
 void            dongle_release(t_dongle *dongle);
 
+// ================== coder ==================
+
+void            *coder_routine(void *arg);
+
+// ================== monitor ==================
+
+void            *monitor_routine(void *arg);
+
 #endif
