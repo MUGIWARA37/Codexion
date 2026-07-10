@@ -18,37 +18,4 @@ resumee.md
 # VSCode
 .vscode/
 
-# CLion / JetBrains
-.idea/
-cmake-build-*/
 
-# Vim / Neovim
-*.swp
-*.swo
-*~
-.*.un~
-Session.vim
-.netrwhist
-
-# Emacs
-\#*\#
-.\#*
-
-# ─── OS artifacts ────────────────────────────────────────────────────────────
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-Thumbs.db
-ehthumbs.db
-
-# ─── Valgrind / sanitizer output ────────────────────────────────────────────
-vgcore.*
-core
-*.log
-
-# ─── Test / scratch files ────────────────────────────────────────────────────
-test
-tests/
-sandbox/
