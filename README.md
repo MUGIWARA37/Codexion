@@ -1,7 +1,8 @@
 # Codexion
 
-> *Master the race for resources before the deadline masters you.*
+*This project has been created as part of the 42 curriculum by rhlou.*
 
+> *Master the race for resources before the deadline masters you.*
 A **dining-philosophers-style concurrency simulation** in C, reframed as coders competing for USB dongles in a co-working hub. Built as part of the 42 / 1337 curriculum.
 
 ---
@@ -80,9 +81,11 @@ src/
 ├── coder.c       — coder thread routine (compile/debug/refactor loop)
 ├── monitor.c     — monitor thread watching for burnout
 ├── dongle.c      — dongle_acquire / dongle_release with wait queue
-├── scheduler.c   — min-heap priority queue (EDF & FIFO support)
-├── log.c         — thread-safe log_event
-└── utils.c       — get_time_ms, ft_msleep, is_sim_over, ft_atoi, ft_strcmp
+├── scheduler.c       — min-heap priority queue (EDF & FIFO support)
+├── scheduler_utils.c — heap helper functions
+├── log.c             — thread-safe log_event
+├── utils.c           — time and state helpers
+└── utils2.c          — string helpers (ft_atoi)
 
 include/
 └── codexion.h    — all structs and prototypes
