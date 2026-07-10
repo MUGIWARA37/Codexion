@@ -4,7 +4,8 @@ CFLAGS   = -Wall -Wextra -Werror -pthread
 INCLUDES = -I include/
 
 SRCS     = src/main.c src/init.c src/coder.c src/dongle.c \
-           src/scheduler.c src/monitor.c src/log.c src/utils.c
+           src/scheduler.c src/scheduler_utils.c src/monitor.c \
+           src/log.c src/utils.c src/utils2.c
 
 HEADER   = include/codexion.h
 

@@ -1,84 +1,94 @@
 /* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   coder.c                                            :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: rhlou <rhlou@student.42.fr>                +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/06 13:14:03 by rhlou             #+#    #+#             */
-/*   Updated: 2026/07/10 13:50:44 by rhlou            ###   ########.fr       */
-/*                                                                            */
+/*																			*/
+/*														:::		::::::::   */
+/*   coder.c											:+:		:+:	:+:   */
+/*													+:+ +:+			+:+		*/
+/*   By: rhlou <rhlou@student.42.fr>				+#+  +:+		+#+		*/
+/*												+#+#+#+#+#+   +#+			*/
+/*   Created: 2026/07/06 13:14:03 by rhlou				#+#	#+#				*/
+/*   Updated: 2026/07/10 13:50:44 by rhlou			###   ########.fr		*/
+/*																			*/
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-void *coder_routine(void *arg)
+static long long	get_priority(t_coder *coder, t_sim *sim)
 {
-    t_dongle *first;
-    t_dongle *second;   
-    long long priority;              
-    int      left;                  
-    int      right; 
-    t_coder *coder;
-    t_sim *sim;
-                                
-    coder = (t_coder *)arg;
-    sim   = coder->sim;
-    left  = coder->id - 1;
-    right = coder->id % sim->num_coders;
-    if (coder->id % 2 == 0)
-    {
-        first  = &sim->dongles[left];
-        second = &sim->dongles[right];
-    }                               
-    else
-    {                         
-        first  = &sim->dongles[right];
-        second = &sim->dongles[left];  
-    }  
-    while (!is_sim_over(sim))
-    {
-        if (sim->use_edf)
-            priority = coder->last_compile_start + sim->time_to_burnout;
-        else
-        {
-            pthread_mutex_lock(&sim->fifo_mutex);
-            priority = sim->fifo_counter++;
-            pthread_mutex_unlock(&sim->fifo_mutex);
-        }
-        
-        dongle_acquire(first, priority, coder->id, sim);
-        dongle_acquire(second, priority, coder->id, sim);
+	long long	priority;
 
-        if (is_sim_over(sim))
-        {
-            dongle_release(second);
-            dongle_release(first);
-            break ;
-        }
+	if (sim->use_edf)
+		priority = coder->last_compile_start + sim->time_to_burnout;
+	else
+	{
+		pthread_mutex_lock(&sim->fifo_mutex);
+		priority = sim->fifo_counter++;
+		pthread_mutex_unlock(&sim->fifo_mutex);
+	}
+	return (priority);
+}
 
-        coder->last_compile_start = get_time_ms();
-        log_event(sim, coder->id, "is compiling");
-        ft_msleep(sim->time_to_compile, sim);
+static int	perform_compile(t_coder *coder, t_dongle *first, t_dongle *second)
+{
+	t_sim	*sim;
 
-        coder->compile_count++;
-        dongle_release(second);
-        dongle_release(first);
+	sim = coder->sim;
+	coder->last_compile_start = get_time_ms();
+	log_event(sim, coder->id, "is compiling");
+	ft_msleep(sim->time_to_compile, sim);
+	coder->compile_count++;
+	dongle_release(second);
+	dongle_release(first);
+	if (sim->num_compiles_required != -1
+		&& coder->compile_count >= sim->num_compiles_required)
+		return (1);
+	return (0);
+}
 
-        if (sim->num_compiles_required != -1
-        && coder->compile_count >= sim->num_compiles_required)
-        break ;
-  
-        // debug
-        log_event(sim, coder->id, "is debugging");
-        ft_msleep(sim->time_to_debug, sim);
-            
-        // refactor
-        log_event(sim, coder->id, "is refactoring");
-        ft_msleep(sim->time_to_refactor, sim);
+static void	coder_loop(t_coder *coder, t_dongle *first, t_dongle *second)
+{
+	t_sim		*sim;
+	long long	priority;
 
-        
-        
-    }
-    return (NULL);
+	sim = coder->sim;
+	while (!is_sim_over(sim))
+	{
+		priority = get_priority(coder, sim);
+		dongle_acquire(first, priority, coder->id, sim);
+		dongle_acquire(second, priority, coder->id, sim);
+		if (is_sim_over(sim))
+		{
+			dongle_release(second);
+			dongle_release(first);
+			break ;
+		}
+		if (perform_compile(coder, first, second))
+			break ;
+		log_event(sim, coder->id, "is debugging");
+		ft_msleep(sim->time_to_debug, sim);
+		log_event(sim, coder->id, "is refactoring");
+		ft_msleep(sim->time_to_refactor, sim);
+	}
+}
+
+void	*coder_routine(void *arg)
+{
+	t_dongle	*first;
+	t_dongle	*second;
+	t_coder		*coder;
+	t_sim		*sim;
+
+	coder = (t_coder *)arg;
+	sim = coder->sim;
+	if (coder->id % 2 == 0)
+	{
+		first = &sim->dongles[coder->id - 1];
+		second = &sim->dongles[coder->id % sim->num_coders];
+	}
+	else
+	{
+		first = &sim->dongles[coder->id % sim->num_coders];
+		second = &sim->dongles[coder->id - 1];
+	}
+	coder_loop(coder, first, second);
+	return (NULL);
 }
