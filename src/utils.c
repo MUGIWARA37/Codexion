@@ -22,17 +22,16 @@ long long	get_time_ms(void)
 
 void	ft_msleep(long long ms, t_sim *sim)
 {
-	long long	i;
+	long long	start;
 
 	if (ms <= 0)
 		return ;
-	i = 0;
-	while (i < ms)
+	start = get_time_ms();
+	while (get_time_ms() - start < ms)
 	{
 		if (is_sim_over(sim))
 			return ;
-		usleep(1000);
-		i++;
+		usleep(500);
 	}
 }
 

@@ -6,7 +6,7 @@
 /*   By: rhlou <rhlou@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/10 13:50:48 by rhlou             #+#    #+#             */
-/*   Updated: 2026/07/10 16:31:39 by rhlou            ###   ########.fr       */
+/*   Updated: 2026/07/10 17:11:54 by rhlou            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ void	*monitor_routine(void *arg)
 	t_sim	*sim;
 
 	sim = (t_sim *)arg;
-	while (1)
+	while (!is_sim_over(sim))
 	{
 		i = 0;
 		while (i < sim->num_coders)
