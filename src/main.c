@@ -26,20 +26,12 @@ static void	clean_up(t_sim sim)
 	free(sim.dongles);
 }
 
-static void	run_routins(t_sim *sim)
+static void	join_threads(t_sim *sim, int created_coders)
 {
 	int	i;
 
-	pthread_create(&sim->monitor_thread, NULL, monitor_routine, sim);
 	i = 0;
-	while (i < sim->num_coders)
-	{
-		pthread_create(&sim->coders[i].thread, NULL, coder_routine,
-			&sim->coders[i]);
-		i++;
-	}
-	i = 0;
-	while (i < sim->num_coders)
+	while (i < created_coders)
 	{
 		pthread_join(sim->coders[i].thread, NULL);
 		i++;
@@ -49,6 +41,27 @@ static void	run_routins(t_sim *sim)
 	pthread_mutex_unlock(&sim->stop_mutex);
 	pthread_join(sim->monitor_thread, NULL);
 	clean_up(*sim);
+}
+
+static void	run_routins(t_sim *sim)
+{
+	int	i;
+
+	if (pthread_create(&sim->monitor_thread, NULL, monitor_routine, sim) != 0)
+	{
+		fprintf(stderr, "Error: Failed to create monitor thread\n");
+		clean_up(*sim);
+		return ;
+	}
+	i = 0;
+	while (i < sim->num_coders)
+	{
+		if (pthread_create(&sim->coders[i].thread, NULL, coder_routine,
+				&sim->coders[i]) != 0)
+			break ;
+		i++;
+	}
+	join_threads(sim, i);
 }
 
 int	main(int argc, char **argv)
