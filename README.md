@@ -116,6 +116,17 @@ Each dongle has its own **min-heap priority queue**. When a coder wants to compi
 | `fifo` | Global counter (arrival order) | First to arrive, first served |
 | `edf` | `last_compile_start + time_to_burnout` | Most urgent coder (closest to burnout) served first |
 
+## 🚀 Advanced Features & Optimizations
+
+### Robust Thread Spawning
+If the OS restricts thread creation (e.g., via `ulimit -u`), the simulation safely catches `pthread_create` failures. It aborts safely if the monitor fails, but if coder threads fail, it dynamically stops spawning and gracefully runs the simulation with only the successfully created coders, avoiding segmentation faults during cleanup.
+
+### Starvation Race Condition Prevention
+A classic multi-threading edge case exists where a starving coder wakes up to grab a dongle at the exact millisecond their burnout expires, updating their `last_compile_start` a microsecond before the monitor thread checks on them, effectively "cheating death". This project explicitly handles this: coders self-check their burnout deadline before updating their timer, yielding to the monitor if they starved.
+
+### Extreme Concurrency `ft_msleep`
+To support extreme tests (e.g., **4500 concurrent coder threads**), the sleep function uses a hybrid approach. It avoids continuous micro-polling (which causes millions of context switches and maxes out the CPU) by doing one large OS-level `usleep` for ~100% of the requested time, followed by a tiny 100us correction loop. This delivers sub-millisecond precision with near-zero CPU footprint.
+
 ---
 
 ## 🛠️ Build
