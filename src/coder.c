@@ -17,7 +17,11 @@ static long long	get_priority(t_coder *coder, t_sim *sim)
 	long long	priority;
 
 	if (sim->use_edf)
+	{
+		pthread_mutex_lock(&coder->coder_mutex);
 		priority = coder->last_compile_start + sim->time_to_burnout;
+		pthread_mutex_unlock(&coder->coder_mutex);
+	}
 	else
 	{
 		pthread_mutex_lock(&sim->fifo_mutex);
@@ -27,21 +31,37 @@ static long long	get_priority(t_coder *coder, t_sim *sim)
 	return (priority);
 }
 
+static int	check_and_update_timer(t_coder *coder)
+{
+	pthread_mutex_lock(&coder->coder_mutex);
+	while (!is_sim_over(coder->sim) && get_time_ms()
+		- coder->last_compile_start > coder->sim->time_to_burnout)
+	{
+		pthread_mutex_unlock(&coder->coder_mutex);
+		usleep(100);
+		pthread_mutex_lock(&coder->coder_mutex);
+	}
+	if (is_sim_over(coder->sim))
+	{
+		pthread_mutex_unlock(&coder->coder_mutex);
+		return (1);
+	}
+	coder->last_compile_start = get_time_ms();
+	pthread_mutex_unlock(&coder->coder_mutex);
+	return (0);
+}
+
 static int	perform_compile(t_coder *coder, t_dongle *first, t_dongle *second)
 {
 	t_sim	*sim;
 
 	sim = coder->sim;
-	while (!is_sim_over(sim) && get_time_ms()
-		- coder->last_compile_start > sim->time_to_burnout)
-		usleep(100);
-	if (is_sim_over(sim))
+	if (check_and_update_timer(coder))
 	{
 		dongle_release(second);
 		dongle_release(first);
 		return (1);
 	}
-	coder->last_compile_start = get_time_ms();
 	log_event(sim, coder->id, "is compiling");
 	ft_msleep(sim->time_to_compile, sim);
 	coder->compile_count++;
@@ -49,33 +69,39 @@ static int	perform_compile(t_coder *coder, t_dongle *first, t_dongle *second)
 	dongle_release(first);
 	if (sim->num_compiles_required != -1
 		&& coder->compile_count >= sim->num_compiles_required)
+	{
+		pthread_mutex_lock(&coder->coder_mutex);
+		coder->finished = 1;
+		pthread_mutex_unlock(&coder->coder_mutex);
 		return (1);
+	}
 	return (0);
 }
 
 static void	coder_loop(t_coder *coder, t_dongle *first, t_dongle *second)
 {
-	t_sim		*sim;
 	long long	priority;
+	int			a[2];
 
-	sim = coder->sim;
-	while (!is_sim_over(sim))
+	if (coder->sim->num_compiles_required == 0)
+		return ;
+	while (!is_sim_over(coder->sim))
 	{
-		priority = get_priority(coder, sim);
-		dongle_acquire(first, priority, coder->id, sim);
-		dongle_acquire(second, priority, coder->id, sim);
-		if (is_sim_over(sim))
+		priority = get_priority(coder, coder->sim);
+		a[0] = dongle_acquire(first, priority, coder->id, coder->sim);
+		a[1] = a[0] && dongle_acquire(second, priority, coder->id, coder->sim);
+		if (!a[1])
 		{
-			dongle_release(second);
-			dongle_release(first);
+			if (a[0])
+				dongle_release(first);
 			break ;
 		}
 		if (perform_compile(coder, first, second))
 			break ;
-		log_event(sim, coder->id, "is debugging");
-		ft_msleep(sim->time_to_debug, sim);
-		log_event(sim, coder->id, "is refactoring");
-		ft_msleep(sim->time_to_refactor, sim);
+		log_event(coder->sim, coder->id, "is debugging");
+		ft_msleep(coder->sim->time_to_debug, coder->sim);
+		log_event(coder->sim, coder->id, "is refactoring");
+		ft_msleep(coder->sim->time_to_refactor, coder->sim);
 	}
 }
 

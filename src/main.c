@@ -12,18 +12,24 @@
 
 #include "codexion.h"
 
-static void	clean_up(t_sim sim)
+static void	clean_up(t_sim *sim)
 {
 	int	j;
 
 	j = 0;
-	while (j < sim.num_coders)
+	while (j < sim->num_coders)
 	{
-		free(sim.dongles[j].wait_queue.data);
+		pthread_mutex_destroy(&sim->coders[j].coder_mutex);
+		pthread_mutex_destroy(&sim->dongles[j].mutex);
+		pthread_cond_destroy(&sim->dongles[j].cond);
+		free(sim->dongles[j].wait_queue.data);
 		j++;
 	}
-	free(sim.coders);
-	free(sim.dongles);
+	pthread_mutex_destroy(&sim->log_mutex);
+	pthread_mutex_destroy(&sim->stop_mutex);
+	pthread_mutex_destroy(&sim->fifo_mutex);
+	free(sim->coders);
+	free(sim->dongles);
 }
 
 static void	join_threads(t_sim *sim, int created_coders)
@@ -40,7 +46,7 @@ static void	join_threads(t_sim *sim, int created_coders)
 	sim->simulation_over = 1;
 	pthread_mutex_unlock(&sim->stop_mutex);
 	pthread_join(sim->monitor_thread, NULL);
-	clean_up(*sim);
+	clean_up(sim);
 }
 
 static void	run_routins(t_sim *sim)
@@ -50,7 +56,7 @@ static void	run_routins(t_sim *sim)
 	if (pthread_create(&sim->monitor_thread, NULL, monitor_routine, sim) != 0)
 	{
 		fprintf(stderr, "Error: Failed to create monitor thread\n");
-		clean_up(*sim);
+		clean_up(sim);
 		return ;
 	}
 	i = 0;

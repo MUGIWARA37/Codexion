@@ -23,17 +23,15 @@ int	init_dongles(t_sim *sim)
 		pthread_cond_init(&sim->dongles[i].cond, NULL);
 		sim->dongles[i].is_available = 1;
 		sim->dongles[i].released_at = 0;
-		if (heap_init(&sim->dongles[i].wait_queue) == -1)
+		if (heap_init(&sim->dongles[i].wait_queue, sim->num_coders) == -1)
 			return (-1);
 		i++;
 	}
 	return (0);
 }
 
-static int	parce_args(t_sim *sim, int argc, char **argv)
+static void	fill_args(t_sim *sim, char **argv)
 {
-	if (!argv || !*argv || argc != 9)
-		return (-1);
 	sim->num_coders = ft_atoi(argv[1]);
 	sim->time_to_burnout = ft_atoi(argv[2]);
 	sim->time_to_compile = ft_atoi(argv[3]);
@@ -41,13 +39,29 @@ static int	parce_args(t_sim *sim, int argc, char **argv)
 	sim->time_to_refactor = ft_atoi(argv[5]);
 	sim->num_compiles_required = ft_atoi(argv[6]);
 	sim->dongle_cooldown = ft_atoi(argv[7]);
+	sim->use_edf = ft_strcmp(argv[8], "edf") == 0;
+}
+
+static int	parce_args(t_sim *sim, int argc, char **argv)
+{
+	int	i;
+
+	if (!argv || !*argv || argc != 9)
+		return (-1);
+	i = 1;
+	while (i < 8)
+	{
+		if (!is_valid_number(argv[i]))
+			return (-1);
+		i++;
+	}
 	if (ft_strcmp(argv[8], "edf") != 0 && ft_strcmp(argv[8], "fifo") != 0)
 	{
 		fprintf(stderr, "Error: scheduler must be 'fifo' or 'edf'\n");
 		return (-1);
 	}
-	sim->use_edf = ft_strcmp(argv[8], "edf") == 0;
-	if (sim->num_coders <= 0 || sim->time_to_burnout < 0
+	fill_args(sim, argv);
+	if (sim->num_coders <= 1 || sim->time_to_burnout < 0
 		|| sim->time_to_compile < 0 || sim->time_to_debug < 0
 		|| sim->time_to_refactor < 0 || sim->num_compiles_required < 0
 		|| sim->dongle_cooldown < 0)
@@ -64,6 +78,8 @@ static int	init_sim2(t_sim *sim)
 	{
 		sim->coders[i].id = i + 1;
 		sim->coders[i].compile_count = 0;
+		sim->coders[i].finished = 0;
+		pthread_mutex_init(&sim->coders[i].coder_mutex, NULL);
 		sim->coders[i].last_compile_start = get_time_ms();
 		sim->coders[i].sim = sim;
 		i++;

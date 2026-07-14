@@ -15,21 +15,9 @@
 int	heap_push(t_heap *h, long long priority, int coder_id)
 {
 	t_heap_entry	new_entry;
-	t_heap_entry	*tmp;
 
-	if (!h)
+	if (!h || h->size == h->capacity)
 		return (-1);
-	if (h->size == h->capacity)
-	{
-		h->capacity *= 2;
-		tmp = realloc(h->data, h->capacity * sizeof(t_heap_entry));
-		if (!tmp)
-		{
-			h->capacity /= 2;
-			return (-1);
-		}
-		h->data = tmp;
-	}
 	new_entry.coder_id = coder_id;
 	new_entry.priority = priority;
 	h->data[h->size] = new_entry;

@@ -41,12 +41,15 @@ void	*monitor_routine(void *arg)
 		i = 0;
 		while (i < sim->num_coders)
 		{
-			if (get_time_ms()
+			pthread_mutex_lock(&sim->coders[i].coder_mutex);
+			if (!sim->coders[i].finished && get_time_ms()
 				- sim->coders[i].last_compile_start > sim->time_to_burnout)
 			{
+				pthread_mutex_unlock(&sim->coders[i].coder_mutex);
 				handle_burnout(sim, sim->coders[i].id);
 				return (NULL);
 			}
+			pthread_mutex_unlock(&sim->coders[i].coder_mutex);
 			i++;
 		}
 		usleep(1000);

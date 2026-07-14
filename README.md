@@ -1,13 +1,13 @@
-# Codexion
+_This project has been created as part of the 42 curriculum by rhlou._
 
-*This project has been created as part of the 42 curriculum by rhlou.*
+# Codexion
 
 > *Master the race for resources before the deadline masters you.*
 A **dining-philosophers-style concurrency simulation** in C, reframed as coders competing for USB dongles in a co-working hub. Built as part of the 42 / 1337 curriculum.
 
 ---
 
-## 📖 Overview
+## Description
 
 - **N coders** sit in a circle, each running as a **pthread thread**.
 - **N dongles** lie between adjacent coders (one between each pair).
@@ -18,7 +18,7 @@ A **dining-philosophers-style concurrency simulation** in C, reframed as coders 
 
 ---
 
-## ⚙️ Usage
+## Instructions
 
 ```
 ./codexion <number_of_coders> <time_to_burnout> <time_to_compile> \
@@ -93,7 +93,7 @@ include/
 
 ---
 
-## 🔒 Synchronization Design
+## Thread synchronization mechanisms
 
 ### Deadlock Prevention — Odd/Even Dongle Order
 Each coder grabs their two dongles in a specific order based on their ID:
@@ -116,18 +116,32 @@ Each dongle has its own **min-heap priority queue**. When a coder wants to compi
 | `fifo` | Global counter (arrival order) | First to arrive, first served |
 | `edf` | `last_compile_start + time_to_burnout` | Most urgent coder (closest to burnout) served first |
 
+---
+
+## Blocking cases handled
+
+The simulation correctly avoids classic deadlocks through the asymmetric acquisition (even/odd dongle ordering).
+It handles high contention starvation by providing an EDF (Earliest Deadline First) scheduler to prioritize coders closer to burning out.
+Single coder configurations are explicitly rejected to prevent structural self-blocking (as one coder cannot compile with a single dongle).
+
 ## 🚀 Advanced Features & Optimizations
 
-### Robust Thread Spawning
-If the OS restricts thread creation (e.g., via `ulimit -u`), the simulation safely catches `pthread_create` failures. It aborts safely if the monitor fails, but if coder threads fail, it dynamically stops spawning and gracefully runs the simulation with only the successfully created coders, avoiding segmentation faults during cleanup.
+### Thread Creation Failure Handling
+If the OS restricts thread creation (e.g., via `ulimit -u`), the simulation catches `pthread_create` failures safely, aborting the process instead of hanging or segfaulting in cleanup.
 
 ### Starvation Race Condition Prevention
 A classic multi-threading edge case exists where a starving coder wakes up to grab a dongle at the exact millisecond their burnout expires, updating their `last_compile_start` a microsecond before the monitor thread checks on them, effectively "cheating death". This project explicitly handles this: coders self-check their burnout deadline before updating their timer, yielding to the monitor if they starved.
 
-### Extreme Concurrency `ft_msleep`
-To support extreme tests (e.g., **4500 concurrent coder threads**), the sleep function uses a hybrid approach. It avoids continuous micro-polling (which causes millions of context switches and maxes out the CPU) by doing one large OS-level `usleep` for ~100% of the requested time, followed by a tiny 100us correction loop. This delivers sub-millisecond precision with near-zero CPU footprint.
+### Efficient Resource Management
+The simulation implements memory-efficient priority queues pre-allocated based on the number of coders, adhering to strict libc function constraints (avoiding `realloc`) while eliminating allocation overhead during runtime.
 
 ---
+
+## Resources
+
+- Documentation for `pthread` API
+- POSIX standard references for threading behavior
+- Generative AI was used extensively during the development and iteration of this codebase. Antigravity AI analyzed edge cases, proposed concurrency designs (like EDF wait queues and even-odd deadlock prevention), diagnosed thread-safety races, and maintained code formatting against the 42 Norm standards.
 
 ## 🛠️ Build
 

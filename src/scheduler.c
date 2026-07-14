@@ -21,11 +21,11 @@ void	ft_swap_heap_entery(t_heap_entry *a, t_heap_entry *b)
 	*b = tmp;
 }
 
-int	heap_init(t_heap *h)
+int	heap_init(t_heap *h, int capacity)
 {
 	if (!h)
 		return (-1);
-	h->capacity = 2;
+	h->capacity = capacity;
 	h->size = 0;
 	h->data = malloc(h->capacity * sizeof(t_heap_entry));
 	if (!h->data)
