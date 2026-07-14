@@ -32,6 +32,15 @@ static int	perform_compile(t_coder *coder, t_dongle *first, t_dongle *second)
 	t_sim	*sim;
 
 	sim = coder->sim;
+	while (!is_sim_over(sim) && get_time_ms()
+		- coder->last_compile_start > sim->time_to_burnout)
+		usleep(100);
+	if (is_sim_over(sim))
+	{
+		dongle_release(second);
+		dongle_release(first);
+		return (1);
+	}
 	coder->last_compile_start = get_time_ms();
 	log_event(sim, coder->id, "is compiling");
 	ft_msleep(sim->time_to_compile, sim);
