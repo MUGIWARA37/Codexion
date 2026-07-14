@@ -18,6 +18,47 @@ A **dining-philosophers-style concurrency simulation** in C, reframed as coders 
 
 ---
 
+## 🔄 Simulation Flow
+
+```mermaid
+flowchart TD
+    A["main.c: parse args & init_sim"] --> B["Launch monitor thread"]
+    A --> C["Launch N coder threads"]
+
+    C --> D{"Coder loop"}
+    D --> E["Compute priority\n FIFO: fifo_counter\nEDF: deadline"]
+    E --> F["Acquire LEFT dongle\n odd ID: left first\neven ID: right first"]
+    F --> G["Acquire RIGHT dongle\n odd ID: right second\neven ID: left second"]
+    G --> H["Update last_compile_start\nLog: is compiling"]
+    H --> I["ft_msleep: time_to_compile"]
+    I --> J["Release both dongles"]
+    J --> K["Log: is debugging\nft_msleep: time_to_debug"]
+    K --> L["Log: is refactoring\nft_msleep: time_to_refactor"]
+    L --> M{"compile_count\n>= required?"}
+    M -- No --> D
+    M -- Yes --> N["Coder thread exits"]
+
+    B --> O{"Monitor loop\nwhile !is_sim_over"}
+    O --> P["Check each coder:\nnow - last_compile_start\n> time_to_burnout?"]
+    P -- No burnout --> Q["usleep 1ms"]
+    Q --> O
+    P -- Burnout! --> R["Log: burned out\nSet simulation_over = 1\nBroadcast all dongle conds"]
+    R --> S["Monitor exits"]
+
+    N --> T["main.c: join all coders"]
+    T --> U["Set simulation_over = 1"]
+    U --> V["Join monitor thread"]
+    V --> W["clean_up: free memory"]
+
+    style A fill:#2d6a4f,color:#fff
+    style R fill:#d62828,color:#fff
+    style N fill:#457b9d,color:#fff
+    style S fill:#457b9d,color:#fff
+    style W fill:#6a4c93,color:#fff
+```
+---
+
+
 ## Instructions
 
 ```
@@ -60,7 +101,7 @@ timestamp_ms  coder_id  event
 
 Events:
 ```
-142 3 is compiling
+142 3 is compilingj
 342 3 is debugging
 442 3 is refactoring
 801 1 burned out

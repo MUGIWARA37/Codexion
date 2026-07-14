@@ -61,7 +61,7 @@ static int	parce_args(t_sim *sim, int argc, char **argv)
 		return (-1);
 	}
 	fill_args(sim, argv);
-	if (sim->num_coders <= 1 || sim->time_to_burnout < 0
+	if (sim->num_coders <= 0 || sim->time_to_burnout < 0
 		|| sim->time_to_compile < 0 || sim->time_to_debug < 0
 		|| sim->time_to_refactor < 0 || sim->num_compiles_required < 0
 		|| sim->dongle_cooldown < 0)

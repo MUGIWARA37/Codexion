@@ -6,7 +6,7 @@
 /*   By: rhlou <rhlou@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/06 13:14:03 by rhlou             #+#    #+#             */
-/*   Updated: 2026/07/10 16:34:23 by rhlou            ###   ########.fr       */
+/*   Updated: 2026/07/14 13:44:15 by rhlou            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ static long long	get_priority(t_coder *coder, t_sim *sim)
 	else
 	{
 		pthread_mutex_lock(&sim->fifo_mutex);
-		priority = sim->fifo_counter++;
+		priority = --sim->fifo_counter;
 		pthread_mutex_unlock(&sim->fifo_mutex);
 	}
 	return (priority);
@@ -107,23 +107,26 @@ static void	coder_loop(t_coder *coder, t_dongle *first, t_dongle *second)
 
 void	*coder_routine(void *arg)
 {
-	t_dongle	*first;
-	t_dongle	*second;
-	t_coder		*coder;
-	t_sim		*sim;
+	t_dongle	*f;
+	t_dongle	*s;
+	t_coder		*c;
 
-	coder = (t_coder *)arg;
-	sim = coder->sim;
-	if (coder->id % 2 == 0)
+	c = (t_coder *)arg;
+	if (c->sim->num_coders == 1)
 	{
-		first = &sim->dongles[coder->id - 1];
-		second = &sim->dongles[coder->id % sim->num_coders];
+		dongle_acquire(&c->sim->dongles[0], get_priority(c, c->sim),
+			c->id, c->sim);
+		ft_msleep(c->sim->time_to_burnout + 10, c->sim);
+		dongle_release(&c->sim->dongles[0]);
+		return (NULL);
 	}
-	else
+	f = &c->sim->dongles[c->id - 1];
+	s = &c->sim->dongles[c->id % c->sim->num_coders];
+	if (c->id % 2 != 0)
 	{
-		first = &sim->dongles[coder->id % sim->num_coders];
-		second = &sim->dongles[coder->id - 1];
+		f = &c->sim->dongles[c->id % c->sim->num_coders];
+		s = &c->sim->dongles[c->id - 1];
 	}
-	coder_loop(coder, first, second);
+	coder_loop(c, f, s);
 	return (NULL);
 }
