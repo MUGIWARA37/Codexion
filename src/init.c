@@ -6,7 +6,7 @@
 /*   By: rhlou <rhlou@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/06 09:29:49 by rhlou             #+#    #+#             */
-/*   Updated: 2026/07/10 16:34:30 by rhlou            ###   ########.fr       */
+/*   Updated: 2026/07/16 11:48:40 by rhlou            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ static int	parce_args(t_sim *sim, int argc, char **argv)
 	return (1);
 }
 
-static int	init_sim2(t_sim *sim)
+static int	init_sim_util(t_sim *sim)
 {
 	int	i;
 
@@ -108,7 +108,7 @@ int	init_sim(t_sim *sim, int argc, char **argv)
 		free(sim->coders);
 		return (-1);
 	}
-	if (init_sim2(sim) == -1)
+	if (init_sim_util(sim) == -1)
 		return (-1);
 	return (0);
 }
