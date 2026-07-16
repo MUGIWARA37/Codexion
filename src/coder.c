@@ -67,14 +67,6 @@ static int	perform_compile(t_coder *coder, t_dongle *first, t_dongle *second)
 	coder->compile_count++;
 	dongle_release(second);
 	dongle_release(first);
-	if (sim->num_compiles_required != -1
-		&& coder->compile_count >= sim->num_compiles_required)
-	{
-		pthread_mutex_lock(&coder->coder_mutex);
-		coder->finished = 1;
-		pthread_mutex_unlock(&coder->coder_mutex);
-		return (1);
-	}
 	return (0);
 }
 

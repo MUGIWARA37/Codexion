@@ -75,7 +75,6 @@ typedef struct t_coder
 	pthread_t			thread;
 	long long			last_compile_start;
 	int					compile_count;
-	int					finished;
 	pthread_mutex_t		coder_mutex;
 	t_sim				*sim;
 }						t_coder;
@@ -91,7 +90,6 @@ int						is_valid_number(const char *str);
 
 // ================== scheduler ==================
 
-void					ft_swap_heap_entery(t_heap_entry *a, t_heap_entry *b);
 int						heap_init(t_heap *h, int capacity);
 void					sift_up(t_heap *h, int i);
 void					sift_down(t_heap *h, int i);
@@ -106,7 +104,6 @@ void					log_event(t_sim *sim, int coder_id, char *event);
 
 // ================== init ==================
 
-int						init_dongles(t_sim *sim);
 int						init_sim(t_sim *sim, int argc, char **argv);
 
 // ================== dongle ==================

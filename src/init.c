@@ -12,7 +12,7 @@
 
 #include "codexion.h"
 
-int	init_dongles(t_sim *sim)
+static int	init_dongles(t_sim *sim)
 {
 	int	i;
 
@@ -78,7 +78,6 @@ static int	init_sim_util(t_sim *sim)
 	{
 		sim->coders[i].id = i + 1;
 		sim->coders[i].compile_count = 0;
-		sim->coders[i].finished = 0;
 		pthread_mutex_init(&sim->coders[i].coder_mutex, NULL);
 		sim->coders[i].last_compile_start = get_time_ms();
 		sim->coders[i].sim = sim;

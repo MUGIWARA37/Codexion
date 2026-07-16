@@ -12,11 +12,10 @@
 
 #include "codexion.h"
 
-static void	handle_burnout(t_sim *sim, int coder_id)
+static void	stop_simulation(t_sim *sim)
 {
 	int	j;
 
-	log_event(sim, coder_id, "burned out");
 	pthread_mutex_lock(&sim->stop_mutex);
 	sim->simulation_over = 1;
 	pthread_mutex_unlock(&sim->stop_mutex);
@@ -30,27 +29,42 @@ static void	handle_burnout(t_sim *sim, int coder_id)
 	}
 }
 
+static void	handle_burnout(t_sim *sim, int coder_id)
+{
+	log_event(sim, coder_id, "burned out");
+	stop_simulation(sim);
+}
+
 void	*monitor_routine(void *arg)
 {
 	int		i;
+	int		all_finished;
 	t_sim	*sim;
 
 	sim = (t_sim *)arg;
 	while (!is_sim_over(sim))
 	{
 		i = 0;
+		all_finished = 1;
 		while (i < sim->num_coders)
 		{
 			pthread_mutex_lock(&sim->coders[i].coder_mutex);
-			if (!sim->coders[i].finished && get_time_ms()
-				- sim->coders[i].last_compile_start > sim->time_to_burnout)
+			if (get_time_ms() - sim->coders[i].last_compile_start
+				> sim->time_to_burnout)
 			{
 				pthread_mutex_unlock(&sim->coders[i].coder_mutex);
 				handle_burnout(sim, sim->coders[i].id);
 				return (NULL);
 			}
+			if (sim->coders[i].compile_count < sim->num_compiles_required)
+				all_finished = 0;
 			pthread_mutex_unlock(&sim->coders[i].coder_mutex);
 			i++;
+		}
+		if (sim->num_compiles_required != -1 && all_finished)
+		{
+			stop_simulation(sim);
+			return (NULL);
 		}
 		usleep(1000);
 	}

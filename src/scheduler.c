@@ -12,7 +12,7 @@
 
 #include "codexion.h"
 
-void	ft_swap_heap_entery(t_heap_entry *a, t_heap_entry *b)
+static void	ft_swap_heap_entery(t_heap_entry *a, t_heap_entry *b)
 {
 	t_heap_entry	tmp;
 
