@@ -35,11 +35,11 @@ int	heap_init(t_heap *h, int capacity)
 
 static int	is_higher_priority(t_heap_entry a, t_heap_entry b)
 {
-	if (a.priority < b.priority)
-		return (1);
-	if (a.priority == b.priority && a.coder_id < b.coder_id)
-		return (1);
-	return (0);
+	if (a.priority != b.priority)
+		return (a.priority < b.priority);
+	if (a.compile_count != b.compile_count)
+		return (a.compile_count < b.compile_count);
+	return (a.coder_id < b.coder_id);
 }
 
 void	sift_up(t_heap *h, int i)

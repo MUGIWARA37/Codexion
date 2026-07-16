@@ -12,7 +12,8 @@
 
 #include "codexion.h"
 
-int	heap_push(t_heap *h, long long priority, int coder_id)
+int	heap_push(t_heap *h, long long priority, int compile_count,
+		int coder_id)
 {
 	t_heap_entry	new_entry;
 
@@ -20,6 +21,7 @@ int	heap_push(t_heap *h, long long priority, int coder_id)
 		return (-1);
 	new_entry.coder_id = coder_id;
 	new_entry.priority = priority;
+	new_entry.compile_count = compile_count;
 	h->data[h->size] = new_entry;
 	h->size++;
 	sift_up(h, h->size - 1);
@@ -34,6 +36,7 @@ t_heap_entry	heap_pop(t_heap *h)
 	if (!h || !h->size)
 	{
 		empty.priority = -1;
+		empty.compile_count = -1;
 		empty.coder_id = -1;
 		return (empty);
 	}

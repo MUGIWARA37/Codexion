@@ -88,8 +88,8 @@ static void	coder_loop(t_coder *coder, t_dongle *first, t_dongle *second)
 	while (!is_sim_over(coder->sim))
 	{
 		priority = get_priority(coder, coder->sim);
-		a[0] = dongle_acquire(first, priority, coder->id, coder->sim);
-		a[1] = a[0] && dongle_acquire(second, priority, coder->id, coder->sim);
+		a[0] = dongle_acquire(first, priority, coder);
+		a[1] = a[0] && dongle_acquire(second, priority, coder);
 		if (!a[1])
 		{
 			if (a[0])
@@ -115,7 +115,7 @@ void	*coder_routine(void *arg)
 	if (c->sim->num_coders == 1)
 	{
 		dongle_acquire(&c->sim->dongles[0], get_priority(c, c->sim),
-			c->id, c->sim);
+			c);
 		ft_msleep(c->sim->time_to_burnout + 10, c->sim);
 		dongle_release(&c->sim->dongles[0]);
 		return (NULL);

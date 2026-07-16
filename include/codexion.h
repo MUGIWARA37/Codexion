@@ -28,6 +28,7 @@ typedef struct t_coder	t_coder;
 typedef struct t_heap_entry
 {
 	long long			priority;
+	int					compile_count;
 	int					coder_id;
 }						t_heap_entry;
 
@@ -94,7 +95,8 @@ void					ft_swap_heap_entery(t_heap_entry *a, t_heap_entry *b);
 int						heap_init(t_heap *h, int capacity);
 void					sift_up(t_heap *h, int i);
 void					sift_down(t_heap *h, int i);
-int						heap_push(t_heap *h, long long priority, int coder_id);
+int						heap_push(t_heap *h, long long priority,
+							int compile_count, int coder_id);
 t_heap_entry			heap_pop(t_heap *h);
 int						heap_peek_id(t_heap *h);
 
@@ -110,7 +112,7 @@ int						init_sim(t_sim *sim, int argc, char **argv);
 // ================== dongle ==================
 
 int						dongle_acquire(t_dongle *dongle, long long priority,
-							int coder_id, t_sim *sim);
+							t_coder *coder);
 void					dongle_release(t_dongle *dongle);
 
 // ================== coder ==================

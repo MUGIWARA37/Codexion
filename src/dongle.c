@@ -34,17 +34,18 @@ static void	wait_for_dongle(t_dongle *dongle, int coder_id, t_sim *sim)
 	}
 }
 
-int	dongle_acquire(t_dongle *dongle, long long priority, int coder_id,
-		t_sim *sim)
+int	dongle_acquire(t_dongle *dongle, long long priority,
+		t_coder *coder)
 {
 	pthread_mutex_lock(&dongle->mutex);
-	if (heap_push(&dongle->wait_queue, priority, coder_id) == -1)
+	if (heap_push(&dongle->wait_queue, priority, coder->compile_count,
+			coder->id) == -1)
 	{
 		pthread_mutex_unlock(&dongle->mutex);
 		return (0);
 	}
-	wait_for_dongle(dongle, coder_id, sim);
-	if (is_sim_over(sim))
+	wait_for_dongle(dongle, coder->id, coder->sim);
+	if (is_sim_over(coder->sim))
 	{
 		pthread_mutex_unlock(&dongle->mutex);
 		return (0);
@@ -52,7 +53,7 @@ int	dongle_acquire(t_dongle *dongle, long long priority, int coder_id,
 	heap_pop(&dongle->wait_queue);
 	dongle->is_available = 0;
 	pthread_mutex_unlock(&dongle->mutex);
-	log_event(sim, coder_id, "has taken a dongle");
+	log_event(coder->sim, coder->id, "has taken a dongle");
 	return (1);
 }
 
