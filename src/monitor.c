@@ -35,33 +35,43 @@ static void	handle_burnout(t_sim *sim, int coder_id)
 	stop_simulation(sim);
 }
 
+static int	check_all_coders(t_sim *sim)
+{
+	int	i;
+	int	all_finished;
+
+	i = 0;
+	all_finished = 1;
+	while (i < sim->num_coders)
+	{
+		pthread_mutex_lock(&sim->coders[i].coder_mutex);
+		if (get_time_ms() - sim->coders[i].last_compile_start
+			> sim->time_to_burnout)
+		{
+			pthread_mutex_unlock(&sim->coders[i].coder_mutex);
+			handle_burnout(sim, sim->coders[i].id);
+			return (-1);
+		}
+		if (sim->coders[i].compile_count < sim->num_compiles_required)
+			all_finished = 0;
+		pthread_mutex_unlock(&sim->coders[i].coder_mutex);
+		i++;
+	}
+	return (all_finished);
+}
+
 void	*monitor_routine(void *arg)
 {
-	int		i;
-	int		all_finished;
+	int		status;
 	t_sim	*sim;
 
 	sim = (t_sim *)arg;
 	while (!is_sim_over(sim))
 	{
-		i = 0;
-		all_finished = 1;
-		while (i < sim->num_coders)
-		{
-			pthread_mutex_lock(&sim->coders[i].coder_mutex);
-			if (get_time_ms() - sim->coders[i].last_compile_start
-				> sim->time_to_burnout)
-			{
-				pthread_mutex_unlock(&sim->coders[i].coder_mutex);
-				handle_burnout(sim, sim->coders[i].id);
-				return (NULL);
-			}
-			if (sim->coders[i].compile_count < sim->num_compiles_required)
-				all_finished = 0;
-			pthread_mutex_unlock(&sim->coders[i].coder_mutex);
-			i++;
-		}
-		if (sim->num_compiles_required != -1 && all_finished)
+		status = check_all_coders(sim);
+		if (status == -1)
+			return (NULL);
+		if (sim->num_compiles_required != -1 && status == 1)
 		{
 			stop_simulation(sim);
 			return (NULL);
