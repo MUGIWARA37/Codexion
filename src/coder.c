@@ -64,7 +64,9 @@ static int	perform_compile(t_coder *coder, t_dongle *first, t_dongle *second)
 	}
 	log_event(sim, coder->id, "is compiling");
 	ft_msleep(sim->time_to_compile, sim);
+	pthread_mutex_lock(&coder->coder_mutex);
 	coder->compile_count++;
+	pthread_mutex_unlock(&coder->coder_mutex);
 	dongle_release(second);
 	dongle_release(first);
 	return (0);
