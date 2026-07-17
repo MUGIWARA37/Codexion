@@ -1,21 +1,14 @@
-# ─── Compiled binary ────────────────────────────────────────────────────────
+# Compiled binary
 codexion
 
-# ─── Object files & dependency files ────────────────────────────────────────
+# Object files and directories
 *.o
-*.d
+objects/
 
-# ─── Libraries ───────────────────────────────────────────────────────────────
-*.a
-*.so
-
-# ─── Agent / AI context file ─────────────────────────────────────────────────
-.agent.md
-resumee.md
-
-# ─── Editor & IDE artifacts ──────────────────────────────────────────────────
-
-# VSCode
+# OS and Editor files
+.DS_Store
 .vscode/
 
-
+# Project documentation (Do not push to 42 repo)
+.agent.md
+resumee.md
