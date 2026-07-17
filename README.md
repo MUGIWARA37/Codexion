@@ -25,34 +25,33 @@ flowchart TD
     A["main.c: parse args & init_sim"] --> B["Launch monitor thread"]
     A --> C["Launch N coder threads"]
 
-    C --> D{"Coder loop"}
+    C --> D{"Coder loop\nwhile !is_sim_over"}
     D --> E["Compute priority\n FIFO: fifo_counter\nEDF: deadline"]
     E --> F["Acquire LEFT dongle\n odd ID: left first\neven ID: right first"]
     F --> G["Acquire RIGHT dongle\n odd ID: right second\neven ID: left second"]
     G --> H["Update last_compile_start\nLog: is compiling"]
     H --> I["ft_msleep: time_to_compile"]
-    I --> J["Release both dongles"]
+    I --> J["Release both dongles\nIncrement compile_count"]
     J --> K["Log: is debugging\nft_msleep: time_to_debug"]
     K --> L["Log: is refactoring\nft_msleep: time_to_refactor"]
-    L --> M{"compile_count\n>= required?"}
-    M -- No --> D
-    M -- Yes --> N["Coder thread exits"]
+    L --> D
 
     B --> O{"Monitor loop\nwhile !is_sim_over"}
     O --> P["Check each coder:\nnow - last_compile_start\n> time_to_burnout?"]
-    P -- No burnout --> Q["usleep 1ms"]
+    P -- No burnout --> P2["All coders compile_count\n>= required?"]
+    P2 -- No --> Q["usleep 1ms"]
     Q --> O
-    P -- Burnout! --> R["Log: burned out\nSet simulation_over = 1\nBroadcast all dongle conds"]
+    P -- Burnout! --> R["Log: burned out\nstop_simulation()"]
+    P2 -- Yes --> R2["stop_simulation()\nSet simulation_over = 1\nBroadcast all dongle conds"]
     R --> S["Monitor exits"]
+    R2 --> S
 
-    N --> T["main.c: join all coders"]
-    T --> U["Set simulation_over = 1"]
-    U --> V["Join monitor thread"]
-    V --> W["clean_up: free memory"]
+    S --> T["main.c: join all coders\nJoin monitor thread"]
+    T --> W["clean_up: free memory"]
 
     style A fill:#2d6a4f,color:#fff
     style R fill:#d62828,color:#fff
-    style N fill:#457b9d,color:#fff
+    style R2 fill:#d62828,color:#fff
     style S fill:#457b9d,color:#fff
     style W fill:#6a4c93,color:#fff
 ```
@@ -76,7 +75,7 @@ flowchart TD
 | `time_to_compile` | ms | Duration of the compile phase (holds both dongles) |
 | `time_to_debug` | ms | Duration of the debug phase |
 | `time_to_refactor` | ms | Duration of the refactor phase |
-| `number_of_compiles_required` | — | Target compile count per coder (-1 = run until burnout) |
+| `number_of_compiles_required` | — | Target compile count per coder |
 | `dongle_cooldown` | ms | Time a dongle is unavailable after being released |
 | `scheduler` | — | `fifo` (arrival order) or `edf` (earliest deadline first) |
 
@@ -86,8 +85,8 @@ flowchart TD
 # 5 coders, FIFO scheduler, 3 compiles each
 ./codexion 5 800 200 100 100 3 50 fifo
 
-# 3 coders, EDF scheduler, run until burnout
-./codexion 3 500 100 50 50 -1 0 edf
+# 3 coders, EDF scheduler, 10 compiles each
+./codexion 3 500 100 50 50 10 0 edf
 ```
 
 ---
@@ -101,7 +100,7 @@ timestamp_ms  coder_id  event
 
 Events:
 ```
-142 3 is compilingj
+142 3 is compiling
 342 3 is debugging
 442 3 is refactoring
 801 1 burned out
@@ -163,7 +162,7 @@ Each dongle has its own **min-heap priority queue**. When a coder wants to compi
 
 The simulation correctly avoids classic deadlocks through the asymmetric acquisition (even/odd dongle ordering).
 It handles high contention starvation by providing an EDF (Earliest Deadline First) scheduler to prioritize coders closer to burning out.
-Single coder configurations are explicitly rejected to prevent structural self-blocking (as one coder cannot compile with a single dongle).
+Single coder configurations are explicitly handled: the lone coder grabs their single dongle and waits for burnout since they cannot compile without two.
 
 ## 🚀 Advanced Features & Optimizations
 

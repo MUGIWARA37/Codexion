@@ -71,7 +71,7 @@ void	*monitor_routine(void *arg)
 		status = check_all_coders(sim);
 		if (status == -1)
 			return (NULL);
-		if (sim->num_compiles_required != -1 && status == 1)
+		if (status == 1)
 		{
 			stop_simulation(sim);
 			return (NULL);
