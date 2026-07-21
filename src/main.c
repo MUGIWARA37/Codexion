@@ -6,7 +6,7 @@
 /*   By: rhlou <rhlou@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/10 14:01:34 by rhlou             #+#    #+#             */
-/*   Updated: 2026/07/10 17:17:22 by rhlou            ###   ########.fr       */
+/*   Updated: 2026/07/21 10:25:37 by rhlou            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ static void	clean_up(t_sim *sim)
 	}
 	pthread_mutex_destroy(&sim->log_mutex);
 	pthread_mutex_destroy(&sim->stop_mutex);
+	pthread_mutex_destroy(&sim->start_mutex);
 	pthread_mutex_destroy(&sim->fifo_mutex);
 	free(sim->coders);
 	free(sim->dongles);
@@ -49,25 +50,40 @@ static void	join_threads(t_sim *sim, int created_coders)
 	clean_up(sim);
 }
 
-static void	run_routins(t_sim *sim)
+static int	handle_thread_error(t_sim *sim, int i)
+{
+	fprintf(stderr, "Error: Failed to create coder thread\n");
+	pthread_mutex_lock(&sim->stop_mutex);
+	sim->simulation_over = 1;
+	pthread_mutex_unlock(&sim->stop_mutex);
+	pthread_mutex_unlock(&sim->start_mutex);
+	join_threads(sim, i);
+	return (1);
+}
+
+static int	run_routins(t_sim *sim)
 {
 	int	i;
 
+	pthread_mutex_lock(&sim->start_mutex);
 	if (pthread_create(&sim->monitor_thread, NULL, monitor_routine, sim) != 0)
 	{
 		fprintf(stderr, "Error: Failed to create monitor thread\n");
+		pthread_mutex_unlock(&sim->start_mutex);
 		clean_up(sim);
-		return ;
+		return (1);
 	}
-	i = 0;
-	while (i < sim->num_coders)
+	i = -1;
+	while (++i < sim->num_coders)
 	{
 		if (pthread_create(&sim->coders[i].thread, NULL, coder_routine,
 				&sim->coders[i]) != 0)
-			break ;
-		i++;
+			return (handle_thread_error(sim, i));
 	}
+	sim->start_time = get_time_ms();
+	pthread_mutex_unlock(&sim->start_mutex);
 	join_threads(sim, i);
+	return (0);
 }
 
 int	main(int argc, char **argv)
@@ -88,6 +104,7 @@ int	main(int argc, char **argv)
 		fprintf(stderr, "Error: invalid arguments\n");
 		return (1);
 	}
-	run_routins(&sim);
+	if (run_routins(&sim) == 1)
+		return (1);
 	return (0);
 }

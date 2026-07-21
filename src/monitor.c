@@ -12,13 +12,10 @@
 
 #include "codexion.h"
 
-static void	stop_simulation(t_sim *sim)
+static void	broadcast_all_dongles(t_sim *sim)
 {
 	int	j;
 
-	pthread_mutex_lock(&sim->stop_mutex);
-	sim->simulation_over = 1;
-	pthread_mutex_unlock(&sim->stop_mutex);
 	j = 0;
 	while (j < sim->num_coders)
 	{
@@ -27,6 +24,14 @@ static void	stop_simulation(t_sim *sim)
 		pthread_mutex_unlock(&sim->dongles[j].mutex);
 		j++;
 	}
+}
+
+static void	stop_simulation(t_sim *sim)
+{
+	pthread_mutex_lock(&sim->stop_mutex);
+	sim->simulation_over = 1;
+	pthread_mutex_unlock(&sim->stop_mutex);
+	broadcast_all_dongles(sim);
 }
 
 static void	handle_burnout(t_sim *sim, int coder_id)
@@ -66,6 +71,8 @@ void	*monitor_routine(void *arg)
 	t_sim	*sim;
 
 	sim = (t_sim *)arg;
+	pthread_mutex_lock(&sim->start_mutex);
+	pthread_mutex_unlock(&sim->start_mutex);
 	while (!is_sim_over(sim))
 	{
 		status = check_all_coders(sim);
@@ -76,6 +83,7 @@ void	*monitor_routine(void *arg)
 			stop_simulation(sim);
 			return (NULL);
 		}
+		broadcast_all_dongles(sim);
 		usleep(1000);
 	}
 	return (NULL);

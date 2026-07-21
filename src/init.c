@@ -19,8 +19,10 @@ static int	init_dongles(t_sim *sim)
 	i = 0;
 	while (i < sim->num_coders)
 	{
-		pthread_mutex_init(&sim->dongles[i].mutex, NULL);
-		pthread_cond_init(&sim->dongles[i].cond, NULL);
+		if (pthread_mutex_init(&sim->dongles[i].mutex, NULL) != 0)
+			return (-1);
+		if (pthread_cond_init(&sim->dongles[i].cond, NULL) != 0)
+			return (-1);
 		sim->dongles[i].is_available = 1;
 		sim->dongles[i].released_at = 0;
 		if (heap_init(&sim->dongles[i].wait_queue, sim->num_coders) == -1)
@@ -73,21 +75,22 @@ static int	init_sim_util(t_sim *sim)
 {
 	int	i;
 
-	i = 0;
-	while (i < sim->num_coders)
+	i = -1;
+	while (++i < sim->num_coders)
 	{
 		sim->coders[i].id = i + 1;
 		sim->coders[i].compile_count = 0;
-		pthread_mutex_init(&sim->coders[i].coder_mutex, NULL);
+		if (pthread_mutex_init(&sim->coders[i].coder_mutex, NULL) != 0)
+			return (-1);
 		sim->coders[i].last_compile_start = get_time_ms();
 		sim->coders[i].sim = sim;
-		i++;
 	}
-	if (init_dongles(sim) == -1)
+	if (init_dongles(sim) == -1
+		|| pthread_mutex_init(&sim->log_mutex, NULL) != 0
+		|| pthread_mutex_init(&sim->stop_mutex, NULL) != 0
+		|| pthread_mutex_init(&sim->start_mutex, NULL) != 0
+		|| pthread_mutex_init(&sim->fifo_mutex, NULL) != 0)
 		return (-1);
-	pthread_mutex_init(&sim->log_mutex, NULL);
-	pthread_mutex_init(&sim->stop_mutex, NULL);
-	pthread_mutex_init(&sim->fifo_mutex, NULL);
 	sim->simulation_over = 0;
 	sim->fifo_counter = 0;
 	sim->start_time = get_time_ms();

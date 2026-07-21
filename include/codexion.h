@@ -62,6 +62,7 @@ typedef struct t_sim
 	t_dongle			*dongles;
 	pthread_mutex_t		log_mutex;
 	pthread_mutex_t		stop_mutex;
+	pthread_mutex_t		start_mutex;
 	int					simulation_over;
 	long long			start_time;
 	long long			fifo_counter;

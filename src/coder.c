@@ -101,26 +101,28 @@ static void	coder_loop(t_coder *coder, t_dongle *first, t_dongle *second)
 
 void	*coder_routine(void *arg)
 {
-	t_dongle	*f;
-	t_dongle	*s;
-	t_coder		*c;
+	t_coder	*c;
 
 	c = (t_coder *)arg;
+	pthread_mutex_lock(&c->sim->start_mutex);
+	pthread_mutex_unlock(&c->sim->start_mutex);
+	pthread_mutex_lock(&c->coder_mutex);
+	c->last_compile_start = c->sim->start_time;
+	pthread_mutex_unlock(&c->coder_mutex);
+	if (is_sim_over(c->sim))
+		return (NULL);
 	if (c->sim->num_coders == 1)
 	{
-		dongle_acquire(&c->sim->dongles[0], get_priority(c, c->sim),
-			c);
+		dongle_acquire(&c->sim->dongles[0], get_priority(c, c->sim), c);
 		ft_msleep(c->sim->time_to_burnout + 10, c->sim);
 		dongle_release(&c->sim->dongles[0]);
 		return (NULL);
 	}
-	f = &c->sim->dongles[c->id - 1];
-	s = &c->sim->dongles[c->id % c->sim->num_coders];
 	if (c->id % 2 != 0)
-	{
-		f = &c->sim->dongles[c->id % c->sim->num_coders];
-		s = &c->sim->dongles[c->id - 1];
-	}
-	coder_loop(c, f, s);
+		coder_loop(c, &c->sim->dongles[c->id % c->sim->num_coders],
+			&c->sim->dongles[c->id - 1]);
+	else
+		coder_loop(c, &c->sim->dongles[c->id - 1],
+			&c->sim->dongles[c->id % c->sim->num_coders]);
 	return (NULL);
 }
