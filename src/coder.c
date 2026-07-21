@@ -6,7 +6,7 @@
 /*   By: rhlou <rhlou@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/06 13:14:03 by rhlou             #+#    #+#             */
-/*   Updated: 2026/07/14 13:44:15 by rhlou            ###   ########.fr       */
+/*   Updated: 2026/07/21 09:50:17 by rhlou            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ static long long	get_priority(t_coder *coder, t_sim *sim)
 	else
 	{
 		pthread_mutex_lock(&sim->fifo_mutex);
-		priority = --sim->fifo_counter;
+		priority = sim->fifo_counter++;
 		pthread_mutex_unlock(&sim->fifo_mutex);
 	}
 	return (priority);
