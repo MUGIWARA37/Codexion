@@ -6,7 +6,7 @@
 /*   By: rhlou <rhlou@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/06 09:29:49 by rhlou             #+#    #+#             */
-/*   Updated: 2026/07/16 11:48:40 by rhlou            ###   ########.fr       */
+/*   Updated: 2026/07/21 15:13:45 by rhlou            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,16 +80,16 @@ static int	init_sim_util(t_sim *sim)
 	{
 		sim->coders[i].id = i + 1;
 		sim->coders[i].compile_count = 0;
-		if (pthread_mutex_init(&sim->coders[i].coder_mutex, NULL) != 0)
+		if (pthread_mutex_init(&sim->coders[i].coder_mutex, NULL))
 			return (-1);
 		sim->coders[i].last_compile_start = get_time_ms();
 		sim->coders[i].sim = sim;
 	}
 	if (init_dongles(sim) == -1
-		|| pthread_mutex_init(&sim->log_mutex, NULL) != 0
-		|| pthread_mutex_init(&sim->stop_mutex, NULL) != 0
-		|| pthread_mutex_init(&sim->start_mutex, NULL) != 0
-		|| pthread_mutex_init(&sim->fifo_mutex, NULL) != 0)
+		|| pthread_mutex_init(&sim->log_mutex, NULL)
+		|| pthread_mutex_init(&sim->stop_mutex, NULL)
+		|| pthread_mutex_init(&sim->start_mutex, NULL)
+		|| pthread_mutex_init(&sim->fifo_mutex, NULL))
 		return (-1);
 	sim->simulation_over = 0;
 	sim->fifo_counter = 0;
