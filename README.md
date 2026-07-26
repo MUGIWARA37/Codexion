@@ -135,34 +135,38 @@ include/
 
 ## Thread synchronization mechanisms
 
-### Deadlock Prevention — Odd/Even Dongle Order
-Each coder grabs their two dongles in a specific order based on their ID:
-- **Even coders**: grab left dongle first, then right.
-- **Odd coders**: grab right dongle first, then left.
-
-This breaks the circular wait condition that causes deadlock.
+### Deadlock Prevention and Coffman’s Conditions
+Deadlocks occur when Coffman's four conditions are met: Mutual Exclusion, Hold and Wait, No Preemption, and Circular Wait. This project actively breaks the **Circular Wait** condition through asymmetric dongle acquisition. Instead of every coder reaching for their left dongle first, the acquisition order depends on the coder's ID:
+- **Even ID coders**: grab left dongle first, then right.
+- **Odd ID coders**: grab right dongle first, then left.
+This structural asymmetry mathematically guarantees that a circular wait dependency can never form, preventing classical deadlocks.
 
 ### Wait Queue — Min-Heap Per Dongle
-Each dongle has its own **min-heap priority queue**. When a coder wants to compile:
-1. They push themselves onto the dongle's heap with a priority.
-2. They sleep on a `pthread_cond_wait` until they are at the top of the heap **and** the dongle is available **and** the cooldown has expired.
-3. When they acquire the dongle, they pop themselves off the heap.
-4. When they release the dongle, they broadcast to wake all waiting coders.
+Each dongle contains its own state protected by a `pthread_mutex_t mutex` and a `pthread_cond_t cond` variable. When a coder attempts to acquire a dongle:
+1. They push their request onto the dongle's **min-heap priority queue**.
+2. They block via `pthread_cond_wait`, yielding the CPU.
+3. They are only allowed to acquire the dongle when they are at the top of the heap, the dongle is available, and the cooldown has expired.
 
-### Schedulers
-
-| Mode | Priority Formula | Behavior |
-|---|---|---|
-| `fifo` | Global counter (arrival order) | First to arrive, first served |
-| `edf` | `last_compile_start + time_to_burnout` | Most urgent coder (closest to burnout) served first |
+### Log Serialization
+To prevent garbled or interleaved terminal output, all logging is serialized through a dedicated, global `pthread_mutex_t log_mutex`. Every state change calls a `log_event()` function which explicitly locks this mutex, calculates the precise timestamp, prints the log line via `printf`, and unlocks the mutex. This ensures every message is written atomically.
 
 ---
 
 ## Blocking cases handled
 
-The simulation correctly avoids classic deadlocks through the asymmetric acquisition (even/odd dongle ordering).
-It handles high contention starvation by providing an EDF (Earliest Deadline First) scheduler to prioritize coders closer to burning out.
-Single coder configurations are explicitly handled: the lone coder grabs their single dongle and waits for burnout since they cannot compile without two.
+### Starvation Prevention
+Starvation occurs when a coder is perpetually denied access to dongles. We solve this via strict scheduling policies:
+1. **FIFO (First In, First Out)**: Utilizes a global atomic counter `fifo_counter` protected by `fifo_mutex`. Older requests are mathematically guaranteed to be served before newer requests.
+2. **EDF (Earliest Deadline First)**: Prioritizes coders closest to burning out (`last_compile_start + time_to_burnout`).
+3. **Secondary Tie-Breaker**: If two coders have the identical priority (e.g., exact same deadline), the min-heap tie-breaks using `compile_count`. The coder who has compiled *less* wins the tie, heavily favoring starving coders and mathematically preventing indefinite starvation.
+
+### Cooldown Handling
+When a coder releases a dongle, they record the `released_at` timestamp. The dongle cannot be acquired again until `get_time_ms() - released_at >= dongle_cooldown`. Because coders are strictly forbidden from communicating with each other (they cannot broadcast to other coders when they drop a dongle), the system employs a **Clock Tick architecture**:
+- The Monitor thread broadcasts to all dongle condition variables every 1 millisecond.
+- This wakes up any sleeping coders who are waiting for a cooldown to expire, allowing them to cleanly acquire the dongle without violating the "no inner communication" rule.
+
+### Precise Burnout Detection
+A dedicated monitor thread (`monitor_routine`) loops continually, sleeping for 1 ms intervals to minimize CPU strain. It reads each coder's `last_compile_start` timestamp to calculate elapsed time. Because reading the timestamp and checking the `simulation_over` flag are both tightly optimized and protected by mutexes, the monitor can detect a burnout and print the death log well within the strict 10 millisecond tolerance limit. If a single-coder configuration is provided, the coder correctly holds their single dongle and waits for the monitor to formally log their burnout, preventing structural hangs.
 
 ## 🚀 Advanced Features & Optimizations
 
