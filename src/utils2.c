@@ -14,16 +14,21 @@
 
 int	is_valid_number(const char *str)
 {
-	int	i;
+	int			i;
+	long long	res;
 
 	i = 0;
+	res = 0;
 	if (str[i] == '-' || str[i] == '+')
 		i++;
-	if (!str[i])
+	if (!str[i] || str[0] == '-')
 		return (0);
 	while (str[i])
 	{
 		if (str[i] < '0' || str[i] > '9')
+			return (0);
+		res = res * 10 + (str[i] - '0');
+		if (res > 2147483647)
 			return (0);
 		i++;
 	}
