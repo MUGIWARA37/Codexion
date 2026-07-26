@@ -6,7 +6,6 @@ codexion
 objects/
 
 # OS and Editor files
-.DS_Store
 .vscode/
 
 # Project documentation (Do not push to 42 repo)
