@@ -125,7 +125,7 @@ src/
 ├── scheduler_utils.c — heap helper functions
 ├── log.c             — thread-safe log_event
 ├── utils.c           — time and state helpers
-└── utils2.c          — string helpers (ft_atoi)
+└── utils2.c          — string helpers (atoi)
 
 include/
 └── codexion.h    — all structs and prototypes

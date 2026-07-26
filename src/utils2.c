@@ -6,7 +6,7 @@
 /*   By: rhlou <rhlou@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/10 14:01:34 by rhlou             #+#    #+#             */
-/*   Updated: 2026/07/24 12:01:06 by rhlou            ###   ########.fr       */
+/*   Updated: 2026/07/26 13:40:14 by rhlou            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,47 +30,41 @@ int	is_valid_number(const char *str)
 	return (1);
 }
 
-static int	signcheck(int sign)
-{
-	if (sign == -1)
-		return (-2147483648);
-	return (2147483647);
-}
-
-static int	space_skiper(const char *nptr)
+void	clean_up_failed(t_sim *sim, int c_done, int d_done, int g_done)
 {
 	int	i;
 
-	i = 0;
-	while (nptr[i] == ' ' || (nptr[i] >= 9 && nptr[i] <= 13))
-		i++;
-	return (i);
+	if (!sim)
+		return ;
+	i = -1;
+	while (++i < c_done)
+		pthread_mutex_destroy(&sim->coders[i].coder_mutex);
+	i = -1;
+	while (++i < d_done)
+	{
+		pthread_mutex_destroy(&sim->dongles[i].mutex);
+		pthread_cond_destroy(&sim->dongles[i].cond);
+		free(sim->dongles[i].wait_queue.data);
+	}
+	if (g_done >= 4)
+		pthread_mutex_destroy(&sim->fifo_mutex);
+	if (g_done >= 3)
+		pthread_mutex_destroy(&sim->start_mutex);
+	if (g_done >= 2)
+		pthread_mutex_destroy(&sim->stop_mutex);
+	if (g_done >= 1)
+		pthread_mutex_destroy(&sim->log_mutex);
 }
 
-int	ft_atoi(const char *nptr)
+int	init_global_mutexes(t_sim *sim)
 {
-	int		i;
-	int		sign;
-	long	res;
-	long	check;
-
-	sign = 1;
-	res = 0;
-	i = space_skiper(nptr);
-	if (nptr[i] == '-' || nptr[i] == '+')
-	{
-		if (nptr[i] == '-')
-			sign = -1;
-		i++;
-	}
-	check = 0;
-	while (nptr[i] >= '0' && nptr[i] <= '9')
-	{
-		res = res * 10 + (nptr[i] - '0');
-		if (res / 10 != check)
-			return (signcheck(sign));
-		check = res;
-		i++;
-	}
-	return (res * sign);
+	if (pthread_mutex_init(&sim->log_mutex, NULL))
+		return (clean_up_failed(sim, sim->num_coders, sim->num_coders, 0), -1);
+	if (pthread_mutex_init(&sim->stop_mutex, NULL))
+		return (clean_up_failed(sim, sim->num_coders, sim->num_coders, 1), -1);
+	if (pthread_mutex_init(&sim->start_mutex, NULL))
+		return (clean_up_failed(sim, sim->num_coders, sim->num_coders, 2), -1);
+	if (pthread_mutex_init(&sim->fifo_mutex, NULL))
+		return (clean_up_failed(sim, sim->num_coders, sim->num_coders, 3), -1);
+	return (0);
 }

@@ -6,7 +6,7 @@
 /*   By: rhlou <rhlou@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/03 17:32:43 by rhlou             #+#    #+#             */
-/*   Updated: 2026/07/24 12:01:13 by rhlou            ###   ########.fr       */
+/*   Updated: 2026/07/26 13:40:23 by rhlou            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 # include <pthread.h>
 # include <stdio.h>
 # include <stdlib.h>
+# include <string.h>
 # include <sys/time.h>
 # include <unistd.h>
 
@@ -85,8 +86,6 @@ typedef struct t_coder
 long long				get_time_ms(void);
 void					ft_msleep(long long ms, t_sim *sim);
 int						is_sim_over(t_sim *sim);
-int						ft_atoi(const char *str);
-int						ft_strcmp(const char *s1, const char *s2);
 int						is_valid_number(const char *str);
 
 // ================== scheduler ==================
@@ -120,5 +119,11 @@ void					*coder_routine(void *arg);
 // ================== monitor ==================
 
 void					*monitor_routine(void *arg);
+
+// ================== cleanup ==================
+
+void					clean_up_failed(t_sim *sim, int c_done, int d_done,
+							int g_done);
+int						init_global_mutexes(t_sim *sim);
 
 #endif

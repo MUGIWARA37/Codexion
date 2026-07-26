@@ -75,19 +75,17 @@ static int	perform_compile(t_coder *coder, t_dongle *first, t_dongle *second)
 static void	coder_loop(t_coder *coder, t_dongle *first, t_dongle *second)
 {
 	long long	priority;
-	int			a[2];
 
 	if (coder->sim->num_compiles_required == 0)
 		return ;
 	while (!is_sim_over(coder->sim))
 	{
 		priority = get_priority(coder, coder->sim);
-		a[0] = dongle_acquire(first, priority, coder);
-		a[1] = a[0] && dongle_acquire(second, priority, coder);
-		if (!a[1])
+		if (!dongle_acquire(first, priority, coder))
+			break ;
+		if (!dongle_acquire(second, priority, coder))
 		{
-			if (a[0])
-				dongle_release(first);
+			dongle_release(first);
 			break ;
 		}
 		if (perform_compile(coder, first, second))

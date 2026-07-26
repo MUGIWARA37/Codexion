@@ -6,7 +6,7 @@
 /*   By: rhlou <rhlou@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/05 12:05:03 by rhlou             #+#    #+#             */
-/*   Updated: 2026/07/24 12:01:01 by rhlou            ###   ########.fr       */
+/*   Updated: 2026/07/26 13:40:06 by rhlou            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,24 +43,4 @@ int	is_sim_over(t_sim *sim)
 	val = sim->simulation_over;
 	pthread_mutex_unlock(&sim->stop_mutex);
 	return (val);
-}
-
-int	ft_strcmp(const char *s1, const char *s2)
-{
-	int	i;
-
-	if (!s1 && !s2)
-		return (0);
-	if (!s1)
-		return (-1 * s2[0]);
-	if (!s2)
-		return (s1[0]);
-	i = 0;
-	while (s1[i] && s2[i])
-	{
-		if (s1[i] != s2[i])
-			return (s1[i] - s2[i]);
-		i++;
-	}
-	return (s1[i] - s2[i]);
 }
