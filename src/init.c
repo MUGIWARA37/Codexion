@@ -6,7 +6,7 @@
 /*   By: rhlou <rhlou@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/06 09:29:49 by rhlou             #+#    #+#             */
-/*   Updated: 2026/07/26 16:22:00 by rhlou            ###   ########.fr       */
+/*   Updated: 2026/07/27 11:31:33 by rhlou            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,10 +70,10 @@ static int	parce_args(t_sim *sim, int argc, char **argv)
 		return (-1);
 	}
 	fill_args(sim, argv);
-	if (sim->num_coders < 0 || sim->time_to_burnout <= 0
-		|| sim->time_to_compile <= 0 || sim->time_to_debug <= 0
-		|| sim->time_to_refactor <= 0 || sim->num_compiles_required < 0
-		|| sim->dongle_cooldown <= 0)
+	if (sim->num_coders <= 0 || sim->time_to_burnout < 0
+		|| sim->time_to_compile < 0 || sim->time_to_debug < 0
+		|| sim->time_to_refactor < 0 || sim->num_compiles_required < 0
+		|| sim->dongle_cooldown < 0)
 		return (-1);
 	return (1);
 }
