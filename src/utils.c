@@ -44,3 +44,12 @@ int	is_sim_over(t_sim *sim)
 	pthread_mutex_unlock(&sim->stop_mutex);
 	return (val);
 }
+
+void	wait_sim_start(t_coder *c)
+{
+	pthread_mutex_lock(&c->sim->start_mutex);
+	pthread_mutex_unlock(&c->sim->start_mutex);
+	pthread_mutex_lock(&c->coder_mutex);
+	c->last_compile_start = c->sim->start_time;
+	pthread_mutex_unlock(&c->coder_mutex);
+}

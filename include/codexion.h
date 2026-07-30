@@ -87,6 +87,7 @@ long long				get_time_ms(void);
 void					ft_msleep(long long ms, t_sim *sim);
 int						is_sim_over(t_sim *sim);
 int						is_valid_number(const char *str);
+void					wait_sim_start(t_coder *c);
 
 // ================== scheduler ==================
 

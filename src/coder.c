@@ -102,11 +102,7 @@ void	*coder_routine(void *arg)
 	t_coder	*c;
 
 	c = (t_coder *)arg;
-	pthread_mutex_lock(&c->sim->start_mutex);
-	pthread_mutex_unlock(&c->sim->start_mutex);
-	pthread_mutex_lock(&c->coder_mutex);
-	c->last_compile_start = c->sim->start_time;
-	pthread_mutex_unlock(&c->coder_mutex);
+	wait_sim_start(c);
 	if (is_sim_over(c->sim))
 		return (NULL);
 	if (c->sim->num_coders == 1)
@@ -120,7 +116,10 @@ void	*coder_routine(void *arg)
 		coder_loop(c, &c->sim->dongles[c->id % c->sim->num_coders],
 			&c->sim->dongles[c->id - 1]);
 	else
+	{
+		ft_msleep(1, c->sim);
 		coder_loop(c, &c->sim->dongles[c->id - 1],
 			&c->sim->dongles[c->id % c->sim->num_coders]);
+	}
 	return (NULL);
 }
