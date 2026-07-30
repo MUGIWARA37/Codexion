@@ -84,7 +84,7 @@ static int	init_sim_util(t_sim *sim)
 	long long current_time;
 
 	i = -1;
-	current_time = get_time_ms;
+	current_time = get_time_ms();
 	while (++i < sim->num_coders)
 	{
 		sim->coders[i].id = i + 1;
