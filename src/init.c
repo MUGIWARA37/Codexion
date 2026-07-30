@@ -81,15 +81,17 @@ static int	parce_args(t_sim *sim, int argc, char **argv)
 static int	init_sim_util(t_sim *sim)
 {
 	int	i;
+	long long current_time;
 
 	i = -1;
+	current_time = get_time_ms;
 	while (++i < sim->num_coders)
 	{
 		sim->coders[i].id = i + 1;
 		sim->coders[i].compile_count = 0;
 		if (pthread_mutex_init(&sim->coders[i].coder_mutex, NULL))
 			return (clean_up_failed(sim, i, 0, 0), -1);
-		sim->coders[i].last_compile_start = get_time_ms();
+		sim->coders[i].last_compile_start = current_time;
 		sim->coders[i].sim = sim;
 	}
 	if (init_dongles(sim) == -1)
