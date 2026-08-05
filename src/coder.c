@@ -62,6 +62,8 @@ static int	perform_compile(t_coder *coder, t_dongle *first, t_dongle *second)
 		dongle_release(first);
 		return (1);
 	}
+	log_event(sim, coder->id, "has taken a dongle");
+	log_event(sim, coder->id, "has taken a dongle");
 	log_event(sim, coder->id, "is compiling");
 	ft_msleep(sim->time_to_compile, sim);
 	pthread_mutex_lock(&coder->coder_mutex);
@@ -102,8 +104,7 @@ void	*coder_routine(void *arg)
 	t_coder	*c;
 
 	c = (t_coder *)arg;
-	wait_sim_start(c);
-	if (is_sim_over(c->sim))
+	if (wait_sim_start(c))
 		return (NULL);
 	if (c->sim->num_coders == 1)
 	{
@@ -112,6 +113,9 @@ void	*coder_routine(void *arg)
 		dongle_release(&c->sim->dongles[0]);
 		return (NULL);
 	}
+	if (c->id % 2 == 0)
+		ft_msleep((c->sim->time_to_compile
+				+ c->sim->dongle_cooldown) / 4, c->sim);
 	if (c->id % 2 != 0)
 		coder_loop(c, &c->sim->dongles[c->id % c->sim->num_coders],
 			&c->sim->dongles[c->id - 1]);

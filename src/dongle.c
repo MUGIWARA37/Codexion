@@ -45,7 +45,6 @@ int	dongle_acquire(t_dongle *dongle, long long priority,
 	heap_pop(&dongle->wait_queue);
 	dongle->is_available = 0;
 	pthread_mutex_unlock(&dongle->mutex);
-	log_event(coder->sim, coder->id, "has taken a dongle");
 	return (1);
 }
 

@@ -73,3 +73,13 @@ int	init_global_mutexes(t_sim *sim)
 		return (clean_up_failed(sim, sim->num_coders, sim->num_coders, 3), -1);
 	return (0);
 }
+
+int	wait_sim_start(t_coder *c)
+{
+	pthread_mutex_lock(&c->sim->start_mutex);
+	pthread_mutex_unlock(&c->sim->start_mutex);
+	pthread_mutex_lock(&c->coder_mutex);
+	c->last_compile_start = c->sim->start_time;
+	pthread_mutex_unlock(&c->coder_mutex);
+	return (is_sim_over(c->sim));
+}
