@@ -85,6 +85,7 @@ static void	coder_loop(t_coder *coder, t_dongle *first, t_dongle *second)
 		priority = get_priority(coder, coder->sim);
 		if (!dongle_acquire(first, priority, coder))
 			break ;
+		priority = get_priority(coder, coder->sim);
 		if (!dongle_acquire(second, priority, coder))
 		{
 			dongle_release(first);
@@ -101,7 +102,9 @@ static void	coder_loop(t_coder *coder, t_dongle *first, t_dongle *second)
 
 void	*coder_routine(void *arg)
 {
-	t_coder	*c;
+	t_coder		*c;
+	t_dongle	*left;
+	t_dongle	*right;
 
 	c = (t_coder *)arg;
 	if (wait_sim_start(c))
@@ -113,17 +116,11 @@ void	*coder_routine(void *arg)
 		dongle_release(&c->sim->dongles[0]);
 		return (NULL);
 	}
-	if (c->id % 2 == 0)
-		ft_msleep((c->sim->time_to_compile
-				+ c->sim->dongle_cooldown) / 4, c->sim);
+	left = &c->sim->dongles[c->id - 1];
+	right = &c->sim->dongles[c->id % c->sim->num_coders];
 	if (c->id % 2 != 0)
-		coder_loop(c, &c->sim->dongles[c->id % c->sim->num_coders],
-			&c->sim->dongles[c->id - 1]);
+		coder_loop(c, right, left);
 	else
-	{
-		ft_msleep(1, c->sim);
-		coder_loop(c, &c->sim->dongles[c->id - 1],
-			&c->sim->dongles[c->id % c->sim->num_coders]);
-	}
+		coder_loop(c, left, right);
 	return (NULL);
 }
