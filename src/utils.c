@@ -6,7 +6,7 @@
 /*   By: rhlou <rhlou@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/05 12:05:03 by rhlou             #+#    #+#             */
-/*   Updated: 2026/07/26 13:40:06 by rhlou            ###   ########.fr       */
+/*   Updated: 2026/08/05 09:21:26 by rhlou            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,13 +43,4 @@ int	is_sim_over(t_sim *sim)
 	val = sim->simulation_over;
 	pthread_mutex_unlock(&sim->stop_mutex);
 	return (val);
-}
-
-void	wait_sim_start(t_coder *c)
-{
-	pthread_mutex_lock(&c->sim->start_mutex);
-	pthread_mutex_unlock(&c->sim->start_mutex);
-	pthread_mutex_lock(&c->coder_mutex);
-	c->last_compile_start = c->sim->start_time;
-	pthread_mutex_unlock(&c->coder_mutex);
 }
