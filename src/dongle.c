@@ -53,5 +53,6 @@ void	dongle_release(t_dongle *dongle)
 	pthread_mutex_lock(&dongle->mutex);
 	dongle->is_available = 1;
 	dongle->released_at = get_time_ms();
+	pthread_cond_broadcast(&dongle->cond);
 	pthread_mutex_unlock(&dongle->mutex);
 }

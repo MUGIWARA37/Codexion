@@ -6,7 +6,7 @@
 /*   By: rhlou <rhlou@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/06 13:14:03 by rhlou             #+#    #+#             */
-/*   Updated: 2026/07/24 12:00:35 by rhlou            ###   ########.fr       */
+/*   Updated: 2026/08/07 10:19:20 by rhlou            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +85,6 @@ static void	coder_loop(t_coder *coder, t_dongle *first, t_dongle *second)
 		priority = get_priority(coder, coder->sim);
 		if (!dongle_acquire(first, priority, coder))
 			break ;
-		priority = get_priority(coder, coder->sim);
 		if (!dongle_acquire(second, priority, coder))
 		{
 			dongle_release(first);
@@ -118,9 +117,12 @@ void	*coder_routine(void *arg)
 	}
 	left = &c->sim->dongles[c->id - 1];
 	right = &c->sim->dongles[c->id % c->sim->num_coders];
-	if (c->id % 2 != 0)
-		coder_loop(c, right, left);
-	else
+	if (c->id % 2 == 0)
+	{
+		ft_msleep((c->sim->time_to_compile + c->sim->dongle_cooldown) / 4, c->sim);
 		coder_loop(c, left, right);
+	}
+	else
+		coder_loop(c, right, left);
 	return (NULL);
 }

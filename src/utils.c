@@ -31,7 +31,7 @@ void	ft_msleep(long long ms, t_sim *sim)
 	{
 		if (is_sim_over(sim))
 			return ;
-		usleep(500);
+		usleep(100);
 	}
 }
 
