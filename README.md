@@ -160,10 +160,10 @@ Starvation occurs when a coder is perpetually denied access to dongles. We solve
 2. **EDF (Earliest Deadline First)**: Prioritizes coders closest to burning out (`last_compile_start + time_to_burnout`).
 3. **Secondary Tie-Breaker**: If two coders have the identical priority (e.g., exact same deadline), the min-heap tie-breaks using `compile_count`. The coder who has compiled *less* wins the tie, heavily favoring starving coders and mathematically preventing indefinite starvation.
 
-### Cooldown Handling
-When a coder releases a dongle, they record the `released_at` timestamp. The dongle cannot be acquired again until `get_time_ms() - released_at >= dongle_cooldown`. Because coders are strictly forbidden from communicating with each other (they cannot broadcast to other coders when they drop a dongle), the system employs a **Clock Tick architecture**:
-- The Monitor thread broadcasts to all dongle condition variables every 1 millisecond.
-- This wakes up any sleeping coders who are waiting for a cooldown to expire, allowing them to cleanly acquire the dongle without violating the "no inner communication" rule.
+### Precise Cooldowns and Sleep Architecture
+When a coder releases a dongle, they record the `released_at` timestamp. The dongle cannot be acquired again until `get_time_ms() - released_at >= dongle_cooldown`. 
+- To wait for cooldowns without constant polling, `wait_for_dongle` calculates the exact absolute expiry time and uses `pthread_cond_timedwait`. This allows the coder to gracefully yield the CPU and wake up autonomously the exact millisecond their cooldown ends.
+- For all other phases (compiling, debugging, refactoring), coders use `ft_msleep`, which uses a `usleep(100)` polling loop to ensure sub-millisecond precision.
 
 ### Precise Burnout Detection
 A dedicated monitor thread (`monitor_routine`) loops continually, sleeping for 1 ms intervals to minimize CPU strain. It reads each coder's `last_compile_start` timestamp to calculate elapsed time. Because reading the timestamp and checking the `simulation_over` flag are both tightly optimized and protected by mutexes, the monitor can detect a burnout and print the death log well within the strict 10 millisecond tolerance limit. If a single-coder configuration is provided, the coder correctly holds their single dongle and waits for the monitor to formally log their burnout, preventing structural hangs.

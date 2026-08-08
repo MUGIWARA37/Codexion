@@ -83,13 +83,8 @@ static void	coder_loop(t_coder *coder, t_dongle *first, t_dongle *second)
 	while (!is_sim_over(coder->sim))
 	{
 		priority = get_priority(coder, coder->sim);
-		if (!dongle_acquire(first, priority, coder))
+		if (!dongles_acquire(first, second, priority, coder))
 			break ;
-		if (!dongle_acquire(second, priority, coder))
-		{
-			dongle_release(first);
-			break ;
-		}
 		if (perform_compile(coder, first, second))
 			break ;
 		log_event(coder->sim, coder->id, "is debugging");

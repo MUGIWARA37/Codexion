@@ -84,6 +84,8 @@ typedef struct t_coder
 // ================== utils ==================
 
 long long				get_time_ms(void);
+void					set_target_timespec(long long target,
+							struct timespec *ts);
 void					ft_msleep(long long ms, t_sim *sim);
 int						is_sim_over(t_sim *sim);
 int						is_valid_number(const char *str);
@@ -111,6 +113,8 @@ int						init_sim(t_sim *sim, int argc, char **argv);
 
 int						dongle_acquire(t_dongle *dongle, long long priority,
 							t_coder *coder);
+int						dongles_acquire(t_dongle *first, t_dongle *second,
+							long long priority, t_coder *coder);
 void					dongle_release(t_dongle *dongle);
 
 // ================== coder ==================

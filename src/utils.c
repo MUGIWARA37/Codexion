@@ -20,6 +20,12 @@ long long	get_time_ms(void)
 	return ((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
 }
 
+void	set_target_timespec(long long target, struct timespec *ts)
+{
+	ts->tv_sec = target / 1000;
+	ts->tv_nsec = (target % 1000) * 1000000;
+}
+
 void	ft_msleep(long long ms, t_sim *sim)
 {
 	long long	start;
