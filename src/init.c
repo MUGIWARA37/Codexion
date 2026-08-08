@@ -80,8 +80,8 @@ static int	parce_args(t_sim *sim, int argc, char **argv)
 
 static int	init_sim_util(t_sim *sim)
 {
-	int	i;
-	long long current_time;
+	int			i;
+	long long	current_time;
 
 	i = -1;
 	current_time = get_time_ms();

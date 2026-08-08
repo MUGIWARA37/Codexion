@@ -119,7 +119,8 @@ void	*coder_routine(void *arg)
 	right = &c->sim->dongles[c->id % c->sim->num_coders];
 	if (c->id % 2 == 0)
 	{
-		ft_msleep((c->sim->time_to_compile + c->sim->dongle_cooldown) / 4, c->sim);
+		ft_msleep((c->sim->time_to_compile
+				+ c->sim->dongle_cooldown) / 4, c->sim);
 		coder_loop(c, left, right);
 	}
 	else
