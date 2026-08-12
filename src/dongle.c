@@ -65,22 +65,12 @@ int	dongle_acquire(t_dongle *dongle, long long priority,
 int	dongles_acquire(t_dongle *first, t_dongle *second, long long priority,
 		t_coder *coder)
 {
-	t_dongle	*lowest;
-	t_dongle	*highest;
-
-	lowest = first;
-	highest = second;
-	if ((void *)first > (void *)second)
-	{
-		lowest = second;
-		highest = first;
-	}
-	pthread_mutex_lock(&lowest->mutex);
-	pthread_mutex_lock(&highest->mutex);
+	pthread_mutex_lock(&first->mutex);
+	pthread_mutex_lock(&second->mutex);
 	heap_push(&first->wait_queue, priority, coder->compile_count, coder->id);
 	heap_push(&second->wait_queue, priority, coder->compile_count, coder->id);
-	pthread_mutex_unlock(&highest->mutex);
-	pthread_mutex_unlock(&lowest->mutex);
+	pthread_mutex_unlock(&second->mutex);
+	pthread_mutex_unlock(&first->mutex);
 	if (!wait_and_pop_dongle(first, coder))
 		return (0);
 	if (!wait_and_pop_dongle(second, coder))
