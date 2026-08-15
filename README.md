@@ -18,45 +18,6 @@ A **dining-philosophers-style concurrency simulation** in C, reframed as coders 
 
 ---
 
-## 🔄 Simulation Flow
-
-```mermaid
-flowchart TD
-    A["main.c: parse args & init_sim"] --> B["Launch monitor thread"]
-    A --> C["Launch N coder threads"]
-
-    C --> D{"Coder loop\nwhile !is_sim_over"}
-    D --> E["Compute priority\n FIFO: fifo_counter\nEDF: deadline"]
-    E --> F["Acquire LEFT dongle\n odd ID: left first\neven ID: right first"]
-    F --> G["Acquire RIGHT dongle\n odd ID: right second\neven ID: left second"]
-    G --> H["Update last_compile_start\nLog: is compiling"]
-    H --> I["ft_msleep: time_to_compile"]
-    I --> J["Release both dongles\nIncrement compile_count"]
-    J --> K["Log: is debugging\nft_msleep: time_to_debug"]
-    K --> L["Log: is refactoring\nft_msleep: time_to_refactor"]
-    L --> D
-
-    B --> O{"Monitor loop\nwhile !is_sim_over"}
-    O --> P["Check each coder:\nnow - last_compile_start\n> time_to_burnout?"]
-    P -- No burnout --> P2["All coders compile_count\n>= required?"]
-    P2 -- No --> Q["usleep 1ms"]
-    Q --> O
-    P -- Burnout! --> R["Log: burned out\nstop_simulation()"]
-    P2 -- Yes --> R2["stop_simulation()\nSet simulation_over = 1\nBroadcast all dongle conds"]
-    R --> S["Monitor exits"]
-    R2 --> S
-
-    S --> T["main.c: join all coders\nJoin monitor thread"]
-    T --> W["clean_up: free memory"]
-
-    style A fill:#2d6a4f,color:#fff
-    style R fill:#d62828,color:#fff
-    style R2 fill:#d62828,color:#fff
-    style S fill:#457b9d,color:#fff
-    style W fill:#6a4c93,color:#fff
-```
----
-
 
 ## Instructions
 
@@ -91,7 +52,7 @@ flowchart TD
 
 ---
 
-## 📝 Output Format
+## Output Format
 
 Every event is printed to stdout as:
 ```
@@ -112,7 +73,7 @@ Events:
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 src/
@@ -168,7 +129,7 @@ When a coder releases a dongle, they record the `released_at` timestamp. The don
 ### Precise Burnout Detection
 A dedicated monitor thread (`monitor_routine`) loops continually, sleeping for 1 ms intervals to minimize CPU strain. It reads each coder's `last_compile_start` timestamp to calculate elapsed time. Because reading the timestamp and checking the `simulation_over` flag are both tightly optimized and protected by mutexes, the monitor can detect a burnout and print the death log well within the strict 10 millisecond tolerance limit. If a single-coder configuration is provided, the coder correctly holds their single dongle and waits for the monitor to formally log their burnout, preventing structural hangs.
 
-## 🚀 Advanced Features & Optimizations
+## Advanced Features & Optimizations
 
 ### Thread Creation Failure Handling
 If the OS restricts thread creation (e.g., via `ulimit -u`), the simulation catches `pthread_create` failures safely, aborting the process instead of hanging or segfaulting in cleanup.
@@ -187,7 +148,7 @@ The simulation implements memory-efficient priority queues pre-allocated based o
 - POSIX standard references for threading behavior
 - Generative AI was used extensively during the development and iteration of this codebase. Antigravity AI analyzed edge cases, proposed concurrency designs (like EDF wait queues and even-odd deadlock prevention), diagnosed thread-safety races, and maintained code formatting against the 42 Norm standards.
 
-## 🛠️ Build
+## Build
 
 ```bash
 make        # build the binary
