@@ -36,8 +36,16 @@ static void	stop_simulation(t_sim *sim)
 
 static void	handle_burnout(t_sim *sim, int coder_id)
 {
-	log_event(sim, coder_id, "burned out");
-	stop_simulation(sim);
+	long long	time_span;
+
+	pthread_mutex_lock(&sim->stop_mutex);
+	sim->simulation_over = 1;
+	pthread_mutex_unlock(&sim->stop_mutex);
+	pthread_mutex_lock(&sim->log_mutex);
+	time_span = get_time_ms() - sim->start_time;
+	printf("%lld %d burned out\n", time_span, coder_id);
+	pthread_mutex_unlock(&sim->log_mutex);
+	broadcast_all_dongles(sim);
 }
 
 static int	check_all_coders(t_sim *sim)
